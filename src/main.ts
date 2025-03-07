@@ -5,15 +5,19 @@ import { Application, NextFunction, Request, Response } from 'express'
 import { ResponseMethod } from './types/public.types'
 import { Server } from 'http'
 
+import AppRouter from './routes/index.routes'
 import express from 'express'
 import http from 'http'
 
+import './app.module'
+
 const PORT = process.env.PORT
 const app: Application = express()
-const server: Server = http.createServer()
+const server: Server = http.createServer(app)
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(AppRouter)
 
 
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -24,6 +28,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   res.status(404).json(response)
 })
 
-server.listen(PORT, () => {
-  console.log(`Server run on:localhost:${PORT}`)
-})
+server.listen(Number(PORT), () => {
+  console.log(`Server running on: http://localhost:${PORT}`);
+});
