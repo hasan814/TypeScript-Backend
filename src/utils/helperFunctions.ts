@@ -1,7 +1,33 @@
-import { genSaltSync, hashSync } from "bcrypt"
+import { compareSync, genSaltSync, hashSync } from "bcrypt";
+import { Algorithm, sign } from "jsonwebtoken";
+import { UserModel } from "../models/user.model";
 
 export const HashString = (data: string): string => {
-  const salt: string = genSaltSync(10)
-  const hashedString: string = hashSync(data, salt)
-  return hashedString
-}
+  const salt: string = genSaltSync(10);
+  return hashSync(data, salt);
+};
+
+export const compareHashString = (data: string, encrypted: string): boolean => {
+  return compareSync(data, encrypted);
+};
+
+export const jwtGenerator = async (payload: any): Promise<string> => {
+  const { id, username } = payload;
+  const user = await UserModel.findById(id);
+  if (!user) throw new Error("User not found");
+  const expiresIn = new Date().getTime() + (1000 * 60 * 60 * 24)
+  const algorithm: Algorithm = "HS512";
+  return new Promise((resolve, reject) => {
+    sign(
+      { id, username },
+      process.env.AccessTokenSecretKey as string,
+      { expiresIn, algorithm },
+      async (error, token) => {
+        if (error || !token) return reject(new Error("Token generation failed"));
+        user.accessToken = token;
+        await user.save();
+        resolve(token);
+      }
+    );
+  });
+};
