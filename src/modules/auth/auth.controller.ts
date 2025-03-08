@@ -2,11 +2,11 @@ import { compareHashString, errorHandler, jwtGenerator } from "../../utils/helpe
 import { NextFunction, Request, Response } from "express";
 import { Controller, Post } from "../../decorators/router.decorators";
 import { TFindUser, IUser } from '../../types/user.types';
-import { AuthService } from './auth.service';
-import { UserModel } from "../../models/user.model";
-import { RegisterDTO } from "./auth.dto";
 import { plainToClass } from "class-transformer";
 import { validateSync } from "class-validator";
+import { RegisterDTO } from "./auth.dto";
+import { AuthService } from './auth.service';
+import { UserModel } from "../../models/user.model";
 
 const authService: AuthService = new AuthService()
 @Controller("/auth")
@@ -31,7 +31,7 @@ export class AuthController {
 
       if (!username || !password) return res.status(400).json({ message: "All required fields must be provided" });
 
-      const existUser: TFindUser = await UserModel.findOne({ username });
+      const existUser: IUser | null = await UserModel.findOne({ username });
       if (!existUser) return res.status(401).json({ message: "Username or Password is incorrect!" });
 
       const isValidUser: boolean = compareHashString(password, existUser.password);

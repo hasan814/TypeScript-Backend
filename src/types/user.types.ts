@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import { Document } from "mongoose";
 
 export interface IUser extends Document {
   fullName: string;
@@ -10,5 +10,3 @@ export interface IUser extends Document {
   avatar?: string
 }
 
-
-export type TFindUser = IUser & { _id: ObjectId } | null
