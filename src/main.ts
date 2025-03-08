@@ -36,7 +36,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   const statusCode: number = +error?.status || 500
   const message: string = error?.message || "InternalServerError"
-  const response: ResponseMethod = { statusCode, message }
+  const response: ResponseMethod = { statusCode, message, errors: error?.errors || [] }
   res.status(statusCode).json(response)
 })
 

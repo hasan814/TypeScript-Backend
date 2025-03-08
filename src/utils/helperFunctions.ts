@@ -1,4 +1,5 @@
 import { compareSync, genSaltSync, hashSync } from "bcrypt";
+import { jwtGeneratorPayloadDTO } from "../types/public.types";
 import { Algorithm, sign } from "jsonwebtoken";
 import { UserModel } from "../models/user.model";
 
@@ -11,15 +12,15 @@ export const compareHashString = (data: string, encrypted: string): boolean => {
   return compareSync(data, encrypted);
 };
 
-export const jwtGenerator = async (payload: any): Promise<string> => {
-  const { id, username } = payload;
+export const jwtGenerator = async (payload: jwtGeneratorPayloadDTO): Promise<string> => {
+  const { id } = payload;
   const user = await UserModel.findById(id);
   if (!user) throw new Error("User not found");
   const expiresIn = new Date().getTime() + (1000 * 60 * 60 * 24)
   const algorithm: Algorithm = "HS512";
   return new Promise((resolve, reject) => {
     sign(
-      { id, username },
+      payload,
       process.env.AccessTokenSecretKey as string,
       { expiresIn, algorithm },
       async (error, token) => {
@@ -31,3 +32,12 @@ export const jwtGenerator = async (payload: any): Promise<string> => {
     );
   });
 };
+
+
+export const errorHandler = (errors: any[]) => {
+  let errorTexts: string[] = []
+  for (const errorItem of errors) {
+    errorTexts = errorTexts.concat(errorItem.constraints)
+  }
+  return errorTexts
+}

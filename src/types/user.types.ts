@@ -1,4 +1,6 @@
-export interface IUser {
+import { ObjectId } from "mongoose";
+
+export interface IUser extends Document {
   fullName: string;
   username: string;
   password: string;
@@ -7,3 +9,6 @@ export interface IUser {
   mobile?: string;
   avatar?: string
 }
+
+
+export type TFindUser = IUser & { _id: ObjectId } | null

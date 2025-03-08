@@ -1,33 +1,24 @@
-import { compareHashString, HashString, jwtGenerator } from "../../utils/helperFunctions";
+import { compareHashString, errorHandler, jwtGenerator } from "../../utils/helperFunctions";
 import { NextFunction, Request, Response } from "express";
 import { Controller, Post } from "../../decorators/router.decorators";
+import { TFindUser, IUser } from '../../types/user.types';
+import { AuthService } from './auth.service';
 import { UserModel } from "../../models/user.model";
-import { TFindUser } from "../../types/public.types";
+import { RegisterDTO } from "./auth.dto";
+import { plainToClass } from "class-transformer";
+import { validateSync } from "class-validator";
 
+const authService: AuthService = new AuthService()
 @Controller("/auth")
 export class AuthController {
   @Post()
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const { username, password, fullName, email, mobile } = req.body;
-
-      if (!username || !password || !fullName) return res.status(400).json({ message: "All required fields must be provided" });
-
-      const existUser = await UserModel.findOne({ username });
-      if (existUser) {
-        return res.status(400).json({ message: "This user already exists" });
-      }
-
-      const newPassword = HashString(password);
-
-      const user = await UserModel.create({
-        email,
-        mobile,
-        username,
-        fullName,
-        password: newPassword,
-      });
-
+      const registerDto: RegisterDTO = plainToClass(RegisterDTO, req.body, { excludeExtraneousValues: true });
+      const errors = validateSync(registerDto)
+      const checkedErrors = errorHandler(errors)
+      if (checkedErrors.length > 0) throw { status: 400, errors: checkedErrors, message: "Validation Error!" }
+      const user: IUser = await authService.register(registerDto)
       res.status(201).json({ message: "User registered successfully!", user });
     } catch (error) {
       next(error);

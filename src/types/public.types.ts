@@ -4,7 +4,12 @@ import { IUser } from "./user.types";
 export type ResponseMethod = {
   statusCode: number;
   message?: string | undefined;
-  data?: object | undefined
+  data?: object | undefined;
+  errors?: object | undefined;
 }
 
-export type TFindUser = IUser & { _id: ObjectId } | null
+
+export interface jwtGeneratorPayloadDTO {
+  id: ObjectId,
+  username: IUser['username']
+}
