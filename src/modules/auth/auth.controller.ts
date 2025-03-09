@@ -1,12 +1,12 @@
-import { compareHashString, errorHandler, jwtGenerator } from "../../utils/helperFunctions";
 import { NextFunction, Request, Response } from "express";
+import { compareHashString, jwtGenerator } from "../../utils/helperFunctions";
 import { Controller, Post } from "../../decorators/router.decorators";
-import { TFindUser, IUser } from '../../types/user.types';
 import { plainToClass } from "class-transformer";
-import { validateSync } from "class-validator";
 import { RegisterDTO } from "./auth.dto";
 import { AuthService } from './auth.service';
 import { UserModel } from "../../models/user.model";
+import { IUser } from '../../types/user.types';
+import { ObjectId } from "mongoose";
 
 const authService: AuthService = new AuthService()
 @Controller("/auth")
@@ -15,9 +15,6 @@ export class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
       const registerDto: RegisterDTO = plainToClass(RegisterDTO, req.body, { excludeExtraneousValues: true });
-      const errors = validateSync(registerDto)
-      const checkedErrors = errorHandler(errors)
-      if (checkedErrors.length > 0) throw { status: 400, errors: checkedErrors, message: "Validation Error!" }
       const user: IUser = await authService.register(registerDto)
       res.status(201).json({ message: "User registered successfully!", user });
     } catch (error) {
@@ -37,7 +34,7 @@ export class AuthController {
       const isValidUser: boolean = compareHashString(password, existUser.password);
       if (!isValidUser) return res.status(401).json({ message: "Username or Password is incorrect!" });
 
-      const accessToken = await jwtGenerator({ username, id: existUser._id })
+      const accessToken = await jwtGenerator({ username, id: existUser._id as ObjectId })
       const user = await UserModel.findById(existUser._id, { __v: 0, password: 0 })
       res.status(201).json({ statusCode: 200, data: { accessToken, user } });
     } catch (error) {

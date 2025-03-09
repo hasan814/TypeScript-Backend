@@ -13,3 +13,5 @@ export interface jwtGeneratorPayloadDTO {
   id: ObjectId,
   username: IUser['username']
 }
+
+export type TFindDoc<T> = T | null | undefined
